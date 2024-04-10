@@ -9,6 +9,9 @@
 #include "ViewProjection.h"
 #include "WorldTransform.h"
 #include "Player.h"
+#include "math_org.h"
+
+#include <vector>
 
 /// <summary>
 /// ゲームシーン
@@ -52,6 +55,7 @@ private: // メンバ変数
 	uint32_t textureHandle_ = 0;
 	// 3Dモデル
 	Model* model_ = nullptr;
+	Model* modelBlock_ = nullptr;
 	// ビュープロジェクション
 	ViewProjection viewProjection_;
 
@@ -60,4 +64,6 @@ private: // メンバ変数
 	/// </summary>
 	// 自キャラ
 	Player* player_ = nullptr;
+	//ブロック
+	std::vector<WorldTransform*> worldTransformBlocks_;
 };

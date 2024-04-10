@@ -7,6 +7,12 @@ GameScene::GameScene() {}
 GameScene::~GameScene() {
 	// 自キャラの解放
 	delete player_;
+
+	//ブロック解放
+	for (WorldTransform* worldTransformBlock : worldTransformBlocks_) {
+		delete worldTransformBlock;
+	}
+	worldTransformBlocks_.clear();
 }
 
 void GameScene::Initialize() {
@@ -20,7 +26,7 @@ void GameScene::Initialize() {
 
 	// 3Dモデルの生成
 	model_ = Model::Create();
-
+	modelBlock_ = Model::Create();
 	// 自キャラの生成
 	player_ = new Player();
 
@@ -32,13 +38,50 @@ void GameScene::Initialize() {
 
 	// 自キャラの初期化
 	player_->Initialize(model_, textureHandle_, &viewProjection_);
+
+	// キューブの生成
+	// 要素数
+	const uint32_t kNumBlockHorizontal = 20;
+	// ブロック1個分の横幅
+	const float kBlockWidth = 2.0f;
+	// 要素数を変更
+	worldTransformBlocks_.resize(kNumBlockHorizontal);
+	for (uint32_t i = 0; i < kNumBlockHorizontal; ++i){
+		worldTransformBlocks_[i] = new WorldTransform();
+		worldTransformBlocks_[i]->Initialize();
+		worldTransformBlocks_[i]->translation_.x = kBlockWidth * i;
+		worldTransformBlocks_[i]->translation_.y = 0.0f;
+	}
 }
 
 void GameScene::Update() {
 
 	// 自キャラの更新
 	player_->Update();
+
+	for (uint32_t i = 0; i < 20; ++i) {
+		worldTransformBlocks_[i]->matWorld_ = MakeAffineMatrix(
+		    worldTransformBlocks_[i]->scale_, 
+			worldTransformBlocks_[i]->rotation_,
+		    worldTransformBlocks_[i]->translation_);
+
+		// 定数バッファに転送する
+		worldTransformBlocks_[i]->TransferMatrix();
+	}
+	/*
+	// ブロックの更新
+	for (WorldTransform* worldTransformBlock : worldTransformBlocks_) {
+
+		// 行列更新
+		worldTransformBlock->matWorld_ = MakeAffineMatrix(
+		    worldTransform_.scale_, worldTransform_.rotation_, worldTransform_.translation_);
+
+		// 定数バッファに転送する
+		worldTransformBlock->TransferMatrix();
+	}
+	*/
 }
+
 
 void GameScene::Draw() {
 
@@ -67,7 +110,15 @@ void GameScene::Draw() {
 	/// ここに3Dオブジェクトの描画処理を追加できる
 	/// </summary>
 	// 自キャラの描画
-	player_->Draw();
+//	player_->Draw();
+
+	// ブロックの描画
+//	for (WorldTransform* worldTransformBlock : worldTransformBlocks_) {
+//		modelBlock_->Draw(*worldTransformBlock, viewProjection_, textureHandle_);
+//	}
+	for (uint32_t i = 0; i < 20; i++) {
+		modelBlock_->Draw(*worldTransformBlocks_[i], viewProjection_, textureHandle_);
+	}
 
 	// 3Dオブジェクト描画後処理
 	Model::PostDraw();
